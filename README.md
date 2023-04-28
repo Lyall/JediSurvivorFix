@@ -8,7 +8,6 @@ This is a fix to remove pillarboxing/letterboxing in Star Wars Jedi: Survivor.
 - Removes pillarboxing/letterboxing cutscenes.
 
 ## Installation
-- **Note:** ***Please make sure any ultrawide-related hex edits or pak mods are removed/reverted first***.
 - Grab the latest release of JediSurvivorFix from [here.](https://github.com/Lyall/JediSurvivorFix/releases)
 - Extract the contents of the release zip in to the the Win64 folder.<br />(e.g. `"<GameDrive>\JediSurvivor"`).
 
