@@ -56,6 +56,11 @@ namespace Memory
         return lengthHook;
     }
 
+    uintptr_t GetAbsolute(uintptr_t address) noexcept
+    {
+        return (address + 4 + *reinterpret_cast<std::int32_t*>(address));
+    }
+
     bool DetourFunction32(void* src, void* dst, int len)
     {
         if (len < 5) return false;
