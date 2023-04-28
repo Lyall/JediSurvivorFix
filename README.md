@@ -30,7 +30,6 @@ Please report any issues you see.
 ## Credits
 
 [RERevHook](https://www.nexusmods.com/residentevilrevelations/mods/26) for the DLL proxy code.<br />
-[WSGF](https://www.wsgf.org/article/common-hex-values) for info on FOV calculation.<br />
 [inipp](https://github.com/mcmtroffaes/inipp) for ini reading. <br />
 [Loguru](https://github.com/emilk/loguru) for logging. <br />
 [length-disassembler](https://github.com/Nomade040/length-disassembler) for length disassembly.
