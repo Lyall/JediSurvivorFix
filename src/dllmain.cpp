@@ -13,9 +13,6 @@ inipp::Ini<char> ini;
 // INI Variables
 bool bAspectFix;
 bool bFOVFix;
-bool bCutsceneFPS;
-bool bControllerType;
-int iControllerType;
 int iCustomResX;
 int iCustomResY;
 int iInjectionDelay;
@@ -57,8 +54,7 @@ void Logging()
 void ReadConfig()
 {
     // Initialize config
-    // UE4 games use launchers so config path is relative to launcher
-
+    // This game has no launcher despite being UE4
     std::ifstream iniFile(".\\JediSurvivorFix.ini");
     if (!iniFile)
     {
@@ -98,11 +94,11 @@ void ReadConfig()
     LOG_F(INFO, "Config Parse: bAspectFix: %d", bAspectFix);
     //LOG_F(INFO, "Config Parse: bFOVFix: %d", bFOVFix);
     //LOG_F(INFO, "Config Parse: fAdditionalFOV: %.2f", fAdditionalFOV);
-    LOG_F(INFO, "Config Parse: iCustomResX: %d", iCustomResX);
-    LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
-    LOG_F(INFO, "Config Parse: fNewX: %.2f", fNewX);
-    LOG_F(INFO, "Config Parse: fNewY: %.2f", fNewY);
-    LOG_F(INFO, "Config Parse: fNewAspect: %.4f", fNewAspect);
+    //LOG_F(INFO, "Config Parse: iCustomResX: %d", iCustomResX);
+    //LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
+    //LOG_F(INFO, "Config Parse: fNewX: %.2f", fNewX);
+    //LOG_F(INFO, "Config Parse: fNewY: %.2f", fNewY);
+    //LOG_F(INFO, "Config Parse: fNewAspect: %.4f", fNewAspect);
 }
 
 void AspectFOVFix()
