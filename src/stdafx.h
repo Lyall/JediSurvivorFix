@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <Shlobj.h>
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <inttypes.h>

@@ -12,11 +12,12 @@ inipp::Ini<char> ini;
 
 // INI Variables
 bool bAspectFix;
-bool bFOVFix;
+bool bGameplayCamera;
 int iCustomResX;
 int iCustomResY;
 int iInjectionDelay;
-float fAdditionalFOV; 
+float fFOVMulti = (float)1; 
+float fCameraDistanceMulti = (float)1;
 int iAspectFix;
 int iFOVFix;
 
@@ -26,8 +27,9 @@ float fNewY;
 float fNativeAspect = (float)16 / 9;
 float fCutsceneAspect = (float)21 / 9;
 float fPi = 3.14159265358979323846f;
+float fOne = (float)1;
 float fNewAspect;
-string sFixVer = "1.0.0";
+string sFixVer = "1.0.1";
 
 // Aspect Ratio/FOV Hook
 DWORD64 AspectFOVFixReturnJMP;
@@ -40,6 +42,34 @@ void __declspec(naked) AspectFOVFix_CC()
         movzx eax, byte ptr[rbx + 0x000002C8]   // Original code
         mov eax, 0                              // Do not constrain aspect ratio
         jmp [AspectFOVFixReturnJMP]                   
+    }
+}
+
+// Gameplay FOV Hook
+DWORD64 GameplayFOVReturnJMP;
+void __declspec(naked) GameplayFOV_CC()
+{
+    __asm
+    {
+        movss xmm0, [fFOVMulti]
+        subss xmm0, [fOne]
+        movaps xmm6, xmm0                           // Original code
+        //minss xmm6, [JediSurvivor.exe + 4B60C0C]  // Original code
+        movaps xmm7, xmm6                           // Original code
+        jmp[GameplayFOVReturnJMP]
+    }
+}
+
+// Gameplay Camera Distance Hook
+DWORD64 GameplayCameraDistanceReturnJMP;
+void __declspec(naked) GameplayCameraDistance_CC()
+{
+    __asm
+    {
+        movss xmm6, [fCameraDistanceMulti]
+        //minss xmm6, [JediSurvivor.exe + 4B60C10] // Original Code
+        movss xmm7, [fOne]      
+        jmp[GameplayCameraDistanceReturnJMP]
     }
 }
 
@@ -67,8 +97,11 @@ void ReadConfig()
 
     inipp::get_value(ini.sections["JediSurvivorFix Parameters"], "InjectionDelay", iInjectionDelay);
     inipp::get_value(ini.sections["Disable Pillarboxing"], "Enabled", bAspectFix);
-    //inipp::get_value(ini.sections["Fix FOV"], "Enabled", bFOVFix);
-    //inipp::get_value(ini.sections["Fix FOV"], "AdditionalFOV", fAdditionalFOV);
+    inipp::get_value(ini.sections["Gameplay Camera"], "Enabled", bGameplayCamera);
+    inipp::get_value(ini.sections["Gameplay Camera"], "FOVMultiplier", fFOVMulti);
+    fFOVMulti = std::clamp(fFOVMulti, (float)0, (float)10);
+    inipp::get_value(ini.sections["Gameplay Camera"], "CameraDistance", fCameraDistanceMulti);
+    fCameraDistanceMulti = std::clamp(fCameraDistanceMulti, (float)0, (float)10);
 
     // Custom resolution
     if (iCustomResX > 0 && iCustomResY > 0)
@@ -92,8 +125,9 @@ void ReadConfig()
     // Log config parse
     LOG_F(INFO, "Config Parse: iInjectionDelay: %dms", iInjectionDelay);
     LOG_F(INFO, "Config Parse: bAspectFix: %d", bAspectFix);
-    //LOG_F(INFO, "Config Parse: bFOVFix: %d", bFOVFix);
-    //LOG_F(INFO, "Config Parse: fAdditionalFOV: %.2f", fAdditionalFOV);
+    LOG_F(INFO, "Config Parse: bGameplayCamera: %d", bGameplayCamera);
+    LOG_F(INFO, "Config Parse: fFOVMulti: %.2f", fFOVMulti);
+    LOG_F(INFO, "Config Parse: fCameraDistanceMulti: %.2f", fCameraDistanceMulti);
     //LOG_F(INFO, "Config Parse: iCustomResX: %d", iCustomResX);
     //LOG_F(INFO, "Config Parse: iCustomResY: %d", iCustomResY);
     //LOG_F(INFO, "Config Parse: fNewX: %.2f", fNewX);
@@ -113,12 +147,47 @@ void AspectFOVFix()
             AspectFOVFixReturnJMP = AspectFOVFixAddress + AspectFOVFixHookLength;
             Memory::DetourFunction64((void*)AspectFOVFixAddress, AspectFOVFix_CC, AspectFOVFixHookLength);
 
-            LOG_F(INFO, "Aspect Ratio/FOV: Hook length is %d bytes", AspectFOVFixHookLength);
-            LOG_F(INFO, "Aspect Ratio/FOV: Hook address is 0x%" PRIxPTR, (uintptr_t)AspectFOVFixAddress);
+            LOG_F(INFO, "Aspect Ratio: Hook length is %d bytes", AspectFOVFixHookLength);
+            LOG_F(INFO, "Aspect Ratio: Hook address is 0x%" PRIxPTR, (uintptr_t)AspectFOVFixAddress);
         }
         else if (!AspectFOVFixScanResult)
         {
-            LOG_F(INFO, "Aspect Ratio/FOV: Pattern scan failed.");
+            LOG_F(INFO, "Aspect Ratio: Pattern scan failed.");
+        }
+    }
+
+    if (bGameplayCamera)
+    {
+        uint8_t* GameplayFOVScanResult = Memory::PatternScan(baseModule, "F3 0F ?? ?? 0F ?? ?? 72 ?? 0F ?? ?? F3 0F ?? ?? ?? ?? ?? ?? 0F ?? ?? 0F ?? ?? ?? ?? ?? ?? 0F ?? ?? ?? ?? ?? ?? 76 ??");
+        if (GameplayFOVScanResult)
+        {
+            DWORD64 GameplayFOVAddress = (uintptr_t)GameplayFOVScanResult + 0x9;
+            int GameplayFOVHookLength = Memory::GetHookLength((char*)GameplayFOVAddress, 13);
+            GameplayFOVReturnJMP = GameplayFOVAddress + GameplayFOVHookLength;
+            Memory::DetourFunction64((void*)GameplayFOVAddress, GameplayFOV_CC, GameplayFOVHookLength);
+
+            LOG_F(INFO, "Gameplay FOV: Hook length is %d bytes", GameplayFOVHookLength);
+            LOG_F(INFO, "Gameplay FOV: Hook address is 0x%" PRIxPTR, (uintptr_t)GameplayFOVAddress);
+        }
+        else if (!GameplayFOVScanResult)
+        {
+            LOG_F(INFO, "Gameplay FOV: Pattern scan failed.");
+        }
+
+        uint8_t* GameplayCameraDistanceScanResult = Memory::PatternScan(baseModule, "0F ?? ?? 72 ?? 0F ?? ?? F3 0F ?? ?? ?? ?? ?? ?? F3 0F ?? ?? ?? ?? ?? ?? 0F ?? ?? F3 0F ?? ?? 0F ");
+        if (GameplayCameraDistanceScanResult)
+        {
+            DWORD64 GameplayCameraDistanceAddress = (uintptr_t)GameplayCameraDistanceScanResult + 0x8;
+            int GameplayCameraDistanceHookLength = Memory::GetHookLength((char*)GameplayCameraDistanceAddress, 13);
+            GameplayCameraDistanceReturnJMP = GameplayCameraDistanceAddress + GameplayCameraDistanceHookLength;
+            Memory::DetourFunction64((void*)GameplayCameraDistanceAddress, GameplayCameraDistance_CC, GameplayCameraDistanceHookLength);
+
+            LOG_F(INFO, "Gameplay Camera Distance: Hook length is %d bytes", GameplayCameraDistanceHookLength);
+            LOG_F(INFO, "Gameplay Camera Distance: Hook address is 0x%" PRIxPTR, (uintptr_t)GameplayCameraDistanceAddress);
+        }
+        else if (!GameplayCameraDistanceScanResult)
+        {
+            LOG_F(INFO, "Gameplay Camera Distance: Pattern scan failed.");
         }
     }
 }
