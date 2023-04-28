@@ -6,6 +6,7 @@ This is a fix to remove pillarboxing/letterboxing in Star Wars Jedi: Survivor.
 
 ## Features
 - Removes pillarboxing/letterboxing cutscenes.
+- Adjustable gameplay FOV/camera distance.
 
 ## Installation
 - Grab the latest release of JediSurvivorFix from [here.](https://github.com/Lyall/JediSurvivorFix/releases)
