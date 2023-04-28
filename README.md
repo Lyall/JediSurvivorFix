@@ -10,7 +10,7 @@ This is a fix to remove pillarboxing/letterboxing in Star Wars Jedi: Survivor
 ## Installation
 - **Note:** ***Please make sure any ultrawide-related hex edits or pak mods are removed/reverted first***.
 - Grab the latest release of JediSurvivorFix from [here.](https://github.com/Lyall/JediSurvivorFix/releases)
-- Extract the contents of the release zip in to the the Win64 folder.<br />(e.g. "**<GameDrive>\Jedi Survivor**").
+- Extract the contents of the release zip in to the the Win64 folder.<br />(e.g. `"<GameDrive>\JediSurvivor"`).
 
 ### Linux/Steam Deck
 - Make sure you set the Steam launch options to `WINEDLLOVERRIDES="xinput1_3=n,b" %command%`
